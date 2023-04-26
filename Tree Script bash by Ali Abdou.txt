@@ -1,0 +1,142 @@
+#!/bin/bash 
+echo "Donner moi le type d'affichage que vous souhaiter "
+echo "1 pour affichage ShowTree Avancer et 0 pour affichage simple " 
+read var 
+if [ $var -eq 1 ]; then  
+# Set the icon to be used for image files
+icon='🌄'
+icon1='🗂️'
+icon3='📝'
+icon4='💻' # en l'utilise pour les fichier executable 
+icon5='🚀' # pour les fichier programmable comme fichier C ou java ou python 
+dir_count=0
+file_count=0
+function traverse {
+  local directory=$1
+  local prefix=$2
+  local level=$3
+  local max_level=$4
+  # Verifier si le niveau actuel et superieur au niveau maximal
+  if [ "$level" -eq "$max_level" ]; then
+    return
+  fi
+  local children
+  #recupere la liste des element du repertoire specifier avec find avec une profondeur max de 1 et profondeur minimal de 1 , on exclue les element cacher , et avec print on ajoute chaque element , readarray lit la liste des element stocker dans children
+  readarray -t children < <(find "$directory" -maxdepth 1 -mindepth 1 ! -name ".*" -printf '%P\n')
+  for child in "${children[@]}"; do
+    local child_prefix="│   "
+    local pointer="├──➤  "
+#si l'element de children et le dernier element de la list children 
+       if [ "$child" == "${children[-1]}" ];then
+      pointer="└──➤  "
+      child_prefix="    "
+    fi
+    if [ -d "$directory/$child" ]; then
+      dir_count=$((dir_count+1))
+      # Changer la couleur au bleu ciel 
+      tput setaf 6
+      # print le nom du directory 
+      echo "${prefix}${pointer}$icon1  $child"
+      # reset the text color
+      tput sgr0
+      # traverse le " child  " directory
+      traverse "$directory/$child" "${prefix}$child_prefix" $((level+1)) $max_level
+    elif [ -f "$directory/$child" ]; then
+  # verifier si le fichier et de type .txt
+  if [[ $child =~ \.txt$ ]]; then
+     # si le fichier et .txt print le fichier avec licon decrit 
+     tput setaf 1
+    echo "${prefix}${pointer}$icon3 $child"
+     elif [[ $child =~ \.(c|java|py)$ ]]; then
+      # si le fichier et de type java c ou python print icon5 puis le nom 
+      tput setaf 2
+      echo "${prefix}${pointer}$icon5 $child"
+  else
+    # verifier si c'est un fichier image 
+    if [[ $child =~ \.(jpg|jpeg|png|gif)$ ]]; then
+      # si c'est un fichier image print icon image  puis filename en rouge 
+      tput setaf 1
+      echo "${prefix}${pointer}$icon $child"
+    else
+      # sinon print le fichier en vers si il'a permission d'execution sinon en rouge
+      # si il'a le droit d'execution 
+      file_count=$((file_count+1))
+      if [ -x "$directory/$child" ]; then
+        # met la couleur verte  
+        tput setaf 2
+     
+        # print nom du fichier 
+     
+        echo "${prefix}${pointer}$icon4 $child"
+     
+      else
+        # met la couleur en rouge 
+        tput setaf 1
+        # print le nom du fichier 
+        echo "${prefix}${pointer}$child"
+      fi
+      fi
+    fi
+  fi
+  # reset the text color
+  tput sgr0    
+done
+}
+#definit la valeur par defaut de la variable au repertoire courant 
+root="."
+#verifie si le nombre d'argument ($#) passee et != 0 
+[ "$#" -ne 0 ] && root="$1"
+
+echo "$root"
+# demande a lutilisateur le nombre de niveau a demande 
+echo -n "Enter the maximum number of levels to display: "
+read max_level
+# appel la fonction traverse 
+traverse "$root" "" 1 $max_level
+echo
+echo "$((dir_count-1)) directories, $file_count files"
+#print un saut de ligne et le nombre total de repertoire et de fichier trouver , dir_count et decrementer de 1 car en compare le repertoire racine lui meme comme repertoire 
+fi
+#tree affichage simple 
+if [ $var -eq 0 ]; then 
+dir_count=0
+file_count=0
+function traverse {
+  local directory=$1
+  local prefix=$2
+  local children
+  #recupere la liste des element du repertoire specifier avec find avec une profondeur max de 1 et profondeur minimal de 1 , on exclue les element cacher , et avec print on ajoute chaque element , readarray lit la liste des element stocker dans children 
+  readarray -t children < <(find "$directory" -maxdepth 1 -mindepth 1 ! -name ".*" -printf '%P\n')
+  #on parcour chaque element de la liste children 
+  for child in "${children[@]}"; do
+    local child_prefix="│   "
+    local pointer="├── "
+#si l'element de children et le dernier element de la list children 
+    if [ "$child" == "${children[-1]}" ]; then
+      pointer="└── "      
+      child_prefix="    "
+    fi
+    if [ -d "$directory/$child" ]; then
+      dir_count=$((dir_count+1))
+      # print le nom du directory 
+      echo "${prefix}${pointer}$child"
+      # en pass a child directory      
+      traverse "$directory/$child" "${prefix}$child_prefix"
+    elif [ -x "$directory/$child" ]; then
+      file_count=$((file_count+1))
+      # print the file name
+      echo "${prefix}${pointer}$child"
+    else
+      file_count=$((file_count+1))
+      # print the file name
+      echo "${prefix}${pointer}$child"
+    fi
+  done
+}
+root="."
+[ "$#" -ne 0 ] && root="$1"
+echo "$root"
+traverse "$root" ""
+echo
+echo "$((dir_count-1)) directories, $file_count files"
+fi
