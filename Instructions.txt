@@ -1,0 +1,23 @@
+HOW TO MAKE THE SCRIPT WORK ON YOUR TERMINAL :
+
+Download the script from GitHub:
+
+-Visit the GitHub repository where you have uploaded your script.
+-Click on the "Download" button to download the script as a text file.
+Rename the file:
+
+-Open a terminal window and navigate to the directory where you have downloaded the script.
+-Type mv "Tree Script bash by Ali Abdou.txt" treeScript.sh and press Enter to rename the file to "treeScript.sh".
+
+Add execution rights:
+
+-Type chmod +x treeScript.sh and press Enter to add execution rights to the script.
+
+Add the script to the PATH to make it a command:
+
+-Move the treeScript.sh file to a directory that's in your PATH environment variable. For example, you could move it to the /usr/local/bin directory by typing sudo mv treeScript.sh /usr/local/bin.
+-Type treeScript in the terminal and press Enter to run the script as a command.
+-The output of the script should appear in the terminal window.
+
+
+//By_ALI_ABDOU
